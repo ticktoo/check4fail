@@ -8,6 +8,19 @@
 php test.php            # Run component tests
 php check.php           # Manual check run
 php status.php          # View current status
+php report.php --list   # List all monitored sites
+```
+
+### Generate Reports
+```bash
+# CLI reports
+php report.php <site_name>
+php report.php ophirum_de
+php report.php ophirum_de --days=30
+
+# Email reports
+php report.php <site_name> --email
+php report.php ophirum_de --email --days=14
 ```
 
 ### Configuration
