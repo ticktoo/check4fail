@@ -1,0 +1,13 @@
+# Example crontab entries for DownDetector
+
+# Run every minute (aggressive monitoring)
+* * * * * cd /home/sebastian/Codebase/downdetector-lite && php check.php >> var/log/cron.log 2>&1
+
+# Run every 5 minutes (recommended for most use cases)
+# */5 * * * * cd /home/sebastian/Codebase/downdetector-lite && php check.php >> var/log/cron.log 2>&1
+
+# Run every 15 minutes (light monitoring)
+# */15 * * * * cd /home/sebastian/Codebase/downdetector-lite && php check.php >> var/log/cron.log 2>&1
+
+# Run every hour (minimal monitoring)
+# 0 * * * * cd /home/sebastian/Codebase/downdetector-lite && php check.php >> var/log/cron.log 2>&1

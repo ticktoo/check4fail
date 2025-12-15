@@ -1,0 +1,48 @@
+# Downdetector Configuration
+# Copy this file to config.toml and adjust settings
+
+[settings]
+# How long to keep uncompressed daily statistics (days)
+retention_days = 7
+# Compress statistics older than this many days
+compression_threshold_days = 1
+# Maximum execution time per site check (seconds)
+timeout_per_site = 30
+# Maximum total execution time for entire cron run (seconds)
+max_execution_time = 300
+
+# Anomaly detection thresholds
+[anomaly_thresholds]
+# Response time multiplier (e.g., 3.0 = 3x slower than average)
+response_time_multiplier = 3.0
+# Response size percentage difference (e.g., 0.5 = 50% difference)
+response_size_difference = 0.5
+# HTTP status code changes trigger immediate alert
+alert_on_status_change = true
+# Content keywords that trigger alerts (case-insensitive)
+error_keywords = ["error", "exception", "fatal", "database error", "500 Internal Server", "503 Service Unavailable"]
+
+# Define your sites to monitor
+[[sites]]
+name = "Production Website"
+url = "https://example.com"
+expected_status = 200
+expected_max_response_time = 2000  # milliseconds
+notification_email = "admin@example.com"
+# override_ip = "192.168.1.100"  # Optional: bypass DNS, test specific server
+
+[[sites]]
+name = "API Endpoint"
+url = "https://api.example.com/health"
+expected_status = 200
+expected_max_response_time = 1000
+notification_email = "devops@example.com"
+check_content_contains = "\"status\":\"ok\""  # Optional: verify response content
+
+[[sites]]
+name = "Standby Cluster"
+url = "https://standby.example.com"
+expected_status = 200
+expected_max_response_time = 3000
+notification_email = "admin@example.com"
+override_ip = "10.0.0.50"  # Direct IP check
