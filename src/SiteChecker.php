@@ -105,7 +105,6 @@ class SiteChecker {
     public function checkSitesParallel(array $sites): array {
         $multiHandle = curl_multi_init();
         $curlHandles = [];
-        $startTimes = [];
         $responseHeaders = [];
         $results = [];
         
@@ -116,7 +115,6 @@ class SiteChecker {
             
             // Store for later reference
             $curlHandles[$index] = $ch;
-            $startTimes[$index] = microtime(true);
             $responseHeaders[$index] = [];
             
             curl_setopt_array($ch, [
@@ -164,8 +162,10 @@ class SiteChecker {
         // Collect results
         foreach ($sites as $index => $siteConfig) {
             $ch = $curlHandles[$index];
-            $endTime = microtime(true);
             $responseBody = curl_multi_getcontent($ch);
+            
+            // Use cURL's accurate individual timing
+            $totalTime = curl_getinfo($ch, CURLINFO_TOTAL_TIME);
             
             $metrics = [
                 'timestamp' => time(),
@@ -173,7 +173,7 @@ class SiteChecker {
                 'url' => $siteConfig['url'],
                 'site_name' => $siteConfig['name'] ?? $siteConfig['url'],
                 'success' => $responseBody !== false && $responseBody !== null,
-                'response_time' => round(($endTime - $startTimes[$index]) * 1000, 2),
+                'response_time' => round($totalTime * 1000, 2),
                 'http_code' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
                 'size_download' => curl_getinfo($ch, CURLINFO_SIZE_DOWNLOAD),
                 'header_size' => curl_getinfo($ch, CURLINFO_HEADER_SIZE),
