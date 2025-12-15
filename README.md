@@ -38,6 +38,22 @@ cp config.toml.example config.toml
 nano config.toml
 ```
 
+Or use the quick add helper to add sites:
+
+```bash
+# Add single site with auto-generated name
+php add-site.php https://example.com
+
+# Add with custom email
+php add-site.php https://example.com admin@example.com
+
+# Add with custom settings
+php add-site.php https://api.example.com/health admin@example.com --max-time=5000
+
+# Bulk add from file
+cat urls.txt | while read url; do php add-site.php "$url"; done
+```
+
 Edit the configuration file to add your sites:
 
 ```toml

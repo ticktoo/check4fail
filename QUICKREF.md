@@ -11,6 +11,17 @@ php status.php          # View current status
 php report.php --list   # List all monitored sites
 ```
 
+### Add Sites Quickly
+```bash
+# Add single site
+php add-site.php https://example.com
+php add-site.php https://example.com admin@example.com
+php add-site.php https://api.example.com/health --max-time=5000
+
+# Bulk add from file
+cat urls.txt | while read url; do php add-site.php "$url"; done
+```
+
 ### Generate Reports
 ```bash
 # CLI reports
