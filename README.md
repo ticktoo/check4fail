@@ -84,6 +84,8 @@ expected_status = 200
 expected_max_response_time = 1000
 notification_email = "devops@example.com"
 check_content_contains = "\"status\":\"ok\""
+basic_auth_user = "api_monitor"
+basic_auth_pass = "secret123"
 
 [[sites]]
 name = "Standby Cluster"
@@ -224,6 +226,8 @@ check4fail-lite/
 | `notification_email` | Yes | Email address for alerts |
 | `override_ip` | No | Bypass DNS, use specific IP |
 | `check_content_contains` | No | Verify response contains text |
+| `basic_auth_user` | No | HTTP Basic Auth username |
+| `basic_auth_pass` | No | HTTP Basic Auth password |
 
 ## Anomaly Detection
 

@@ -85,6 +85,8 @@ expected_max_response_time = 2000  # milliseconds
 notification_email = "admin@example.com"
 override_ip = "192.168.1.100"  # Optional: bypass DNS
 check_content_contains = "success"  # Optional: content validation
+basic_auth_user = "username"  # Optional: HTTP Basic Auth
+basic_auth_pass = "password"  # Optional: HTTP Basic Auth
 ```
 
 ## 🔍 Troubleshooting

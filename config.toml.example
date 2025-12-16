@@ -38,6 +38,8 @@ expected_status = 200
 expected_max_response_time = 1000
 notification_email = "devops@example.com"
 check_content_contains = "\"status\":\"ok\""  # Optional: verify response content
+# basic_auth_user = "api_user"  # Optional: HTTP Basic Auth username
+# basic_auth_pass = "secret123"  # Optional: HTTP Basic Auth password
 
 [[sites]]
 name = "Standby Cluster"

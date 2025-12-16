@@ -149,6 +149,12 @@ class SiteChecker {
                 ]);
             }
             
+            // Basic authentication
+            if (!empty($siteConfig['basic_auth_user']) && !empty($siteConfig['basic_auth_pass'])) {
+                curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+                curl_setopt($ch, CURLOPT_USERPWD, $siteConfig['basic_auth_user'] . ':' . $siteConfig['basic_auth_pass']);
+            }
+            
             curl_multi_add_handle($multiHandle, $ch);
         }
         
