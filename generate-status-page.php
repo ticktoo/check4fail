@@ -594,7 +594,7 @@ HTML;
                 <div class="label">Monitored Systems</div>
             </div>
             <div class="stat-card">
-                <div class="value">{$overallUptime}%</div>
+                <div class="value">{$overallUptimeFormatted}%</div>
                 <div class="label">Overall Uptime</div>
             </div>
             <div class="stat-card">
