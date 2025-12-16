@@ -159,14 +159,13 @@ function getStatusText(float $uptime): string {
  */
 function generateChartData(array $history, int $days, array $historicalStats): array {
     $labels = [];
-    $uptimeData = [];
     $responseTimeData = [];
     
     // Get dates in order
     $dates = array_keys($history);
     sort($dates);
     
-    // Fill in missing days with 0
+    // Fill in missing days with null (so chart shows gaps)
     $startDate = strtotime("-{$days} days");
     for ($i = 0; $i < $days; $i++) {
         $date = date('Y-m-d', strtotime("+{$i} days", $startDate));
@@ -174,21 +173,16 @@ function generateChartData(array $history, int $days, array $historicalStats): a
         
         if (isset($history[$date]) && !empty($history[$date])) {
             $checks = $history[$date];
-            $uptime = calculateUptime($checks, $historicalStats);
-            $uptimeData[] = round($uptime, 2);
-            
             $responseTimes = array_filter(array_column($checks, 'response_time'), fn($t) => $t > 0);
-            $avgResponseTime = !empty($responseTimes) ? array_sum($responseTimes) / count($responseTimes) : 0;
-            $responseTimeData[] = round($avgResponseTime, 2);
+            $avgResponseTime = !empty($responseTimes) ? array_sum($responseTimes) / count($responseTimes) : null;
+            $responseTimeData[] = $avgResponseTime !== null ? round($avgResponseTime, 2) : null;
         } else {
-            $uptimeData[] = 0;
-            $responseTimeData[] = 0;
+            $responseTimeData[] = null;
         }
     }
     
     return [
         'labels' => $labels,
-        'uptime' => $uptimeData,
         'responseTime' => $responseTimeData
     ];
 }
@@ -398,8 +392,17 @@ function generateHtmlPage(array $sitesData, array $config, int $days): string {
             text-transform: uppercase;
         }
         
+        .uptime-gauge-container {
+            display: none;
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .uptime-gauge-container.active {
+            display: block;
+        }
+        
         .chart-container {
-            margin: 20px 0;
             height: 200px;
             display: none;
         }
@@ -653,8 +656,13 @@ HTML;
                 </div>
             </div>
             
-            <div class="chart-container" id="{$chartId}">
-                <canvas id="{$chartId}_canvas"></canvas>
+            <div style="display: grid; grid-template-columns: 200px 1fr; gap: 20px; margin-top: 20px;">
+                <div class="uptime-gauge-container">
+                    <canvas id="{$chartId}_gauge" width="200" height="200"></canvas>
+                </div>
+                <div class="chart-container" id="{$chartId}">
+                    <canvas id="{$chartId}_canvas"></canvas>
+                </div>
             </div>
             
             <button class="expand-btn" onclick="toggleDetails('{$chartId}', '{$detailsId}')">
@@ -696,10 +704,11 @@ HTML;
             $warningCount = count(array_filter($dailyIncidents, fn($i) => $i['is_warning']));
             $warningDisplay = $warningCount > 0 ? "<span style=\"color: #eab308; font-weight: 600;\">{$warningCount}</span>" : "-";
             
+            $checkCount = count($checks);
             $html .= <<<HTML
                     <tr>
                         <td>{$date}</td>
-                        <td>{$stats['count']}</td>
+                        <td>{$checkCount}</td>
                         <td>{$dailyUptime}%</td>
                         <td>{$warningDisplay}</td>
                         <td>{$avgResponse} ms</td>
@@ -816,6 +825,7 @@ HTML;
         
         function toggleDetails(chartId, detailsId) {
             const chartContainer = document.getElementById(chartId);
+            const gaugeContainer = document.getElementById(chartId + '_gauge').parentElement;
             const detailsTable = document.getElementById(detailsId);
             const incidentsSection = document.getElementById('incidents_' + detailsId);
             
@@ -823,16 +833,18 @@ HTML;
             
             if (isActive) {
                 chartContainer.classList.remove('active');
+                gaugeContainer.classList.remove('active');
                 detailsTable.classList.remove('active');
                 if (incidentsSection) incidentsSection.classList.remove('active');
             } else {
                 chartContainer.classList.add('active');
+                gaugeContainer.classList.add('active');
                 detailsTable.classList.add('active');
                 if (incidentsSection) incidentsSection.classList.add('active');
                 
-                // Initialize chart if not already done
+                // Initialize charts if not already done
                 if (!chartContainer.dataset.initialized) {
-                    initChart(chartId);
+                    initCharts(chartId);
                     chartContainer.dataset.initialized = 'true';
                 }
             }
@@ -846,52 +858,29 @@ HTML;
             return '#ef4444'; // red
         }
         
-        function initChart(chartId) {
+        function initCharts(chartId) {
             const data = chartData[chartId];
+            
+            // Initialize response time chart
             const canvas = document.getElementById(chartId + '_canvas');
             const ctx = canvas.getContext('2d');
             
-            // Generate colors for each uptime data point
-            const uptimeColors = data.uptime.map(uptime => getUptimeColor(uptime));
-            const uptimeBackgroundColors = data.uptime.map(uptime => {
-                const color = getUptimeColor(uptime);
-                // Convert hex to rgba with transparency
-                const r = parseInt(color.slice(1, 3), 16);
-                const g = parseInt(color.slice(3, 5), 16);
-                const b = parseInt(color.slice(5, 7), 16);
-                return 'rgba(' + r + ', ' + g + ', ' + b + ', 0.1)';
-            });
-            
+            // Create response time chart
             new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: data.labels,
                     datasets: [
                         {
-                            label: 'Uptime %',
-                            data: data.uptime,
-                            borderColor: uptimeColors,
-                            backgroundColor: uptimeBackgroundColors,
-                            segment: {
-                                borderColor: ctx => {
-                                    const uptime = ctx.p1.parsed.y;
-                                    return getUptimeColor(uptime);
-                                }
-                            },
-                            tension: 0.4,
-                            yAxisID: 'y',
-                            pointBackgroundColor: uptimeColors,
-                            pointBorderColor: uptimeColors,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
-                        },
-                        {
                             label: 'Response Time (ms)',
                             data: data.responseTime,
                             borderColor: '#667eea',
                             backgroundColor: 'rgba(102, 126, 234, 0.1)',
                             tension: 0.4,
-                            yAxisID: 'y1'
+                            fill: true,
+                            pointRadius: 3,
+                            pointHoverRadius: 5,
+                            spanGaps: false
                         }
                     ]
                 },
@@ -906,34 +895,87 @@ HTML;
                         legend: {
                             display: true,
                             position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Response Time Trend'
                         }
                     },
                     scales: {
                         y: {
                             type: 'linear',
                             display: true,
-                            position: 'left',
-                            min: 0,
-                            max: 100,
-                            title: {
-                                display: true,
-                                text: 'Uptime %'
-                            }
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
+                            beginAtZero: true,
                             title: {
                                 display: true,
                                 text: 'Response Time (ms)'
-                            },
-                            grid: {
-                                drawOnChartArea: false,
                             }
                         }
                     }
                 }
+            });
+            
+            // Create uptime gauge
+            initUptimeGauge(chartId);
+        }
+        
+        function initUptimeGauge(chartId) {
+            const gaugeCanvas = document.getElementById(chartId + '_gauge');
+            const ctx = gaugeCanvas.getContext('2d');
+            
+            // Get uptime from site card
+            const siteCard = gaugeCanvas.closest('.site-card');
+            const uptimeDisplay = siteCard.querySelector('.uptime-display');
+            const uptimeValue = parseFloat(uptimeDisplay.textContent);
+            
+            // Create doughnut chart as gauge
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [uptimeValue, 100 - uptimeValue],
+                        backgroundColor: [
+                            getUptimeColor(uptimeValue),
+                            '#e5e7eb'
+                        ],
+                        borderWidth: 0,
+                        circumference: 180,
+                        rotation: 270
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    maintainAspectRatio: true,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: false
+                        }
+                    }
+                },
+                plugins: [{
+                    id: 'gaugeText',
+                    afterDraw: (chart) => {
+                        const {ctx, chartArea: {left, right, top, bottom}} = chart;
+                        const centerX = (left + right) / 2;
+                        const centerY = bottom - 20;
+                        
+                        ctx.save();
+                        ctx.font = 'bold 24px Arial';
+                        ctx.fillStyle = '#1f2937';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(uptimeValue.toFixed(2) + '%', centerX, centerY);
+                        
+                        ctx.font = '12px Arial';
+                        ctx.fillStyle = '#6b7280';
+                        ctx.fillText('Uptime', centerX, centerY + 20);
+                        ctx.restore();
+                    }
+                }]
             });
         }
     </script>
