@@ -34,6 +34,18 @@ php report.php <site_name> --email
 php report.php ophirum_de --email --days=14
 ```
 
+### Generate Status Page
+```bash
+# Generate static HTML status page
+php generate-status-page.php
+php generate-status-page.php --title="Production Status"
+php generate-status-page.php --org="ACME Corp" --days=30
+php generate-status-page.php --output=/var/www/status
+
+# View in browser
+xdg-open public_html/index.html
+```
+
 ### Configuration
 ```bash
 nano config.toml        # Edit configuration

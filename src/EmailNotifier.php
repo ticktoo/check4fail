@@ -25,7 +25,7 @@ class EmailNotifier {
             'critical' => '🔴 CRITICAL',
             'error' => '🔴 ERROR',
             'warning' => '⚠️ WARNING',
-            default => 'ℹ️ INFO'
+            default => 'ℹ️ INFO',
         };
         
         $subject = "{$subjectPrefix}: {$siteName} - Anomaly Detected";

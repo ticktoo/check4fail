@@ -10,6 +10,7 @@ A lightweight, PHP-based website monitoring and anomaly detection system that ru
 - ✅ **Anomaly Detection** - Detects response time spikes, size changes, status code errors
 - ✅ **Email Notifications** - Multipart text/HTML emails compatible with Thunderbird & Outlook
 - ✅ **Performance Reports** - Generate detailed reports for customers (CLI or email)
+- ✅ **Professional Status Page** - Generate beautiful static HTML status pages with charts
 - ✅ **Race Condition Prevention** - File-based locking prevents overlapping runs
 - ✅ **Override IP Support** - Test standby clusters directly by bypassing DNS
 - ✅ **Data Compression** - Automatically compresses old statistics to save space
@@ -141,6 +142,24 @@ Send report via email:
 ```bash
 php report.php <site_name> --email
 ```
+
+### 7. Generate Status Page (Optional)
+
+Create a professional public status page:
+```bash
+php generate-status-page.php
+php generate-status-page.php --title="Production Status" --org="Your Company"
+php generate-status-page.php --output=/var/www/status --days=30
+```
+
+The status page includes:
+- Real-time uptime percentages with color indicators
+- Interactive charts (Chart.js) showing uptime and response time trends
+- Expandable detailed statistics tables
+- Auto-refresh every 5 minutes
+- Mobile responsive design
+
+Serve via web server (see `nginx.conf.example` or `apache.conf.example`).
 
 ```cron
 # Run DownDetector every minute

@@ -1,0 +1,62 @@
+# Nginx configuration for DownDetector status page
+# Place this in /etc/nginx/sites-available/status.example.com
+# Then: ln -s /etc/nginx/sites-available/status.example.com /etc/nginx/sites-enabled/
+# Reload: nginx -t && systemctl reload nginx
+
+server {
+    listen 80;
+    listen [::]:80;
+    
+    server_name status.example.com;
+    
+    # Redirect HTTP to HTTPS (optional, recommended)
+    # return 301 https://$server_name$request_uri;
+    
+    root /home/sebastian/Codebase/downdetector-lite/public_html;
+    index index.html;
+    
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    
+    # Cache static assets
+    location ~* \.(css|js|jpg|jpeg|png|gif|ico|svg)$ {
+        expires 1h;
+        add_header Cache-Control "public, immutable";
+    }
+    
+    # Main location
+    location / {
+        try_files $uri $uri/ =404;
+    }
+    
+    # Deny access to hidden files
+    location ~ /\. {
+        deny all;
+    }
+    
+    access_log /var/log/nginx/status.example.com.access.log;
+    error_log /var/log/nginx/status.example.com.error.log;
+}
+
+# HTTPS configuration (optional, requires SSL certificate)
+# server {
+#     listen 443 ssl http2;
+#     listen [::]:443 ssl http2;
+#     
+#     server_name status.example.com;
+#     
+#     ssl_certificate /etc/letsencrypt/live/status.example.com/fullchain.pem;
+#     ssl_certificate_key /etc/letsencrypt/live/status.example.com/privkey.pem;
+#     ssl_protocols TLSv1.2 TLSv1.3;
+#     ssl_ciphers HIGH:!aNULL:!MD5;
+#     
+#     root /home/sebastian/Codebase/downdetector-lite/public_html;
+#     index index.html;
+#     
+#     # Same configuration as above
+#     location / {
+#         try_files $uri $uri/ =404;
+#     }
+# }

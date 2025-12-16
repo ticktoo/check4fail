@@ -1,0 +1,52 @@
+# Apache configuration for DownDetector status page
+# Place this in /etc/apache2/sites-available/status.example.com.conf
+# Enable: a2ensite status.example.com
+# Reload: apache2ctl configtest && systemctl reload apache2
+
+<VirtualHost *:80>
+    ServerName status.example.com
+    ServerAdmin admin@example.com
+    
+    DocumentRoot /home/sebastian/Codebase/downdetector-lite/public_html
+    
+    <Directory /home/sebastian/Codebase/downdetector-lite/public_html>
+        Options -Indexes +FollowSymLinks
+        AllowOverride None
+        Require all granted
+        
+        # Default file
+        DirectoryIndex index.html
+    </Directory>
+    
+    # Security headers
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Cache static assets
+    <FilesMatch "\.(css|js|jpg|jpeg|png|gif|ico|svg)$">
+        Header set Cache-Control "public, max-age=3600"
+    </FilesMatch>
+    
+    # Deny access to hidden files
+    <FilesMatch "^\.">
+        Require all denied
+    </FilesMatch>
+    
+    ErrorLog ${APACHE_LOG_DIR}/status.example.com.error.log
+    CustomLog ${APACHE_LOG_DIR}/status.example.com.access.log combined
+</VirtualHost>
+
+# HTTPS configuration (optional, requires SSL certificate)
+# <VirtualHost *:443>
+#     ServerName status.example.com
+#     ServerAdmin admin@example.com
+#     
+#     DocumentRoot /home/sebastian/Codebase/downdetector-lite/public_html
+#     
+#     SSLEngine on
+#     SSLCertificateFile /etc/letsencrypt/live/status.example.com/fullchain.pem
+#     SSLCertificateKeyFile /etc/letsencrypt/live/status.example.com/privkey.pem
+#     
+#     # Same configuration as above
+# </VirtualHost>

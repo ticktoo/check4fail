@@ -1,6 +1,7 @@
 # Add log and lock directories to .gitignore
 /var/
 /data/
+/public_html/
 config.toml
 *.log
 .DS_Store
