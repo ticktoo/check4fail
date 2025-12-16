@@ -1,4 +1,4 @@
-# Apache configuration for DownDetector status page
+# Apache configuration for Check4Fail status page
 # Place this in /etc/apache2/sites-available/status.example.com.conf
 # Enable: a2ensite status.example.com
 # Reload: apache2ctl configtest && systemctl reload apache2
@@ -7,9 +7,9 @@
     ServerName status.example.com
     ServerAdmin admin@example.com
     
-    DocumentRoot /home/sebastian/Codebase/downdetector-lite/public_html
+    DocumentRoot /home/sebastian/Codebase/check4fail-lite/public_html
     
-    <Directory /home/sebastian/Codebase/downdetector-lite/public_html>
+    <Directory /home/sebastian/Codebase/check4fail-lite/public_html>
         Options -Indexes +FollowSymLinks
         AllowOverride None
         Require all granted
@@ -42,7 +42,7 @@
 #     ServerName status.example.com
 #     ServerAdmin admin@example.com
 #     
-#     DocumentRoot /home/sebastian/Codebase/downdetector-lite/public_html
+#     DocumentRoot /home/sebastian/Codebase/check4fail-lite/public_html
 #     
 #     SSLEngine on
 #     SSLCertificateFile /etc/letsencrypt/live/status.example.com/fullchain.pem

@@ -1,8 +1,8 @@
 #!/bin/bash
-# Quick setup script for DownDetector
+# Quick setup script for Check4Fail
 
 echo "================================================"
-echo "DownDetector Lite - Setup"
+echo "Check4Fail Lite - Setup"
 echo "================================================"
 echo ""
 
@@ -45,7 +45,7 @@ fi
 
 echo ""
 echo "================================================"
-echo "Testing DownDetector..."
+echo "Testing Check4Fail..."
 echo "================================================"
 echo ""
 
@@ -64,7 +64,7 @@ echo "3. Add to crontab: crontab -e"
 echo "   * * * * * cd $(pwd) && php check.php >> var/log/cron.log 2>&1"
 echo ""
 echo "Check logs:"
-echo "  - tail -f var/log/downdetector_$(date +%Y-%m-%d).log"
+echo "  - tail -f var/log/check4fail_$(date +%Y-%m-%d).log"
 echo "  - tail -f var/log/cron.log"
 echo ""
 echo "View data:"

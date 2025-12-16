@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * DownDetector - Report Generator
+ * Check4Fail - Report Generator
  * 
  * Generates detailed reports for monitored sites showing statistics
  * for the last 7 days (or custom period).
@@ -36,7 +36,7 @@ require_once BASE_DIR . '/src/EmailNotifier.php';
  * Display usage information
  */
 function showUsage(): void {
-    echo "DownDetector Report Generator\n\n";
+    echo "Check4Fail Report Generator\n\n";
     echo "Usage:\n";
     echo "  php report.php <site_name> [options]\n";
     echo "  php report.php --list\n\n";
@@ -118,7 +118,7 @@ function generateCliReport(string $siteName, int $days): void {
     // Display report
     echo "\n";
     echo "╔══════════════════════════════════════════════════════════════════╗\n";
-    echo "║              DownDetector - Site Report                         ║\n";
+    echo "║              Check4Fail - Site Report                         ║\n";
     echo "╚══════════════════════════════════════════════════════════════════╝\n";
     echo "\n";
     
@@ -276,7 +276,7 @@ function generateEmailReport(string $siteName, int $days, array $siteConfig): vo
     $latestCheck = end($allChecks);
     
     // Build report
-    $subject = "DownDetector Report: {$siteConfig['name']} ({$days} days)";
+    $subject = "Check4Fail Report: {$siteConfig['name']} ({$days} days)";
     
     $textBody = buildTextReport($siteName, $siteConfig, $stats, $history, $allChecks, $days);
     $htmlBody = buildHtmlReport($siteName, $siteConfig, $stats, $history, $allChecks, $days);
@@ -297,7 +297,7 @@ function generateEmailReport(string $siteName, int $days, array $siteConfig): vo
  * Build text report
  */
 function buildTextReport(string $siteName, array $siteConfig, array $stats, array $history, array $allChecks, int $days): string {
-    $text = "DOWNDETECTOR SITE REPORT\n";
+    $text = "CHECK4FAIL SITE REPORT\n";
     $text .= str_repeat("=", 70) . "\n\n";
     
     $text .= "Site: {$siteConfig['name']}\n";
@@ -321,7 +321,7 @@ function buildTextReport(string $siteName, array $siteConfig, array $stats, arra
     }
     
     $text .= "\n" . str_repeat("=", 70) . "\n";
-    $text .= "This is an automated report from DownDetector.\n";
+    $text .= "This is an automated report from Check4Fail.\n";
     
     return $text;
 }
@@ -337,7 +337,7 @@ function buildHtmlReport(string $siteName, array $siteConfig, array $stats, arra
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>DownDetector Report</title>
+    <title>Check4Fail Report</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4f4f4; padding: 20px;">
@@ -464,7 +464,7 @@ function buildHtmlReport(string $siteName, array $siteConfig, array $stats, arra
                     <tr>
                         <td style="background-color: #f5f5f5; padding: 20px; text-align: center; border-top: 1px solid #e0e0e0;">
                             <p style="margin: 0; color: #999; font-size: 12px;">
-                                This is an automated report from DownDetector<br>
+                                This is an automated report from Check4Fail<br>
                                 Generated on ' . date('Y-m-d H:i:s') . '
                             </p>
                         </td>
@@ -487,7 +487,7 @@ function sendMultipartEmail(string $to, string $subject, string $textBody, strin
     $boundary = md5(uniqid(time()));
     
     $headers = [
-        "From: DownDetector <downdetector@localhost>",
+        "From: Check4Fail <check4fail@localhost>",
         "MIME-Version: 1.0",
         "Content-Type: multipart/alternative; boundary=\"{$boundary}\""
     ];

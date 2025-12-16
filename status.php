@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * Generate a status report for DownDetector
+ * Generate a status report for Check4Fail
  */
 
 define('BASE_DIR', __DIR__);
@@ -9,7 +9,7 @@ define('DATA_DIR', BASE_DIR . '/data');
 define('LOG_DIR', BASE_DIR . '/var/log');
 
 echo "╔══════════════════════════════════════════════════════════╗\n";
-echo "║         DownDetector Lite - Status Report               ║\n";
+echo "║         Check4Fail Lite - Status Report               ║\n";
 echo "╚══════════════════════════════════════════════════════════╝\n\n";
 
 // Check configuration
@@ -84,7 +84,7 @@ if (is_dir(LOG_DIR)) {
     
     if (!empty($logFiles)) {
         // Get today's log
-        $todayLog = LOG_DIR . '/downdetector_' . date('Y-m-d') . '.log';
+        $todayLog = LOG_DIR . '/check4fail_' . date('Y-m-d') . '.log';
         if (file_exists($todayLog)) {
             $lines = file($todayLog);
             $recentLines = array_slice($lines, -5);

@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * DownDetector - Main cron script
+ * Check4Fail - Main cron script
  * 
  * This script checks configured sites for availability and performance issues.
  * It should be run via cron at regular intervals (e.g., every minute).
@@ -28,7 +28,7 @@ foreach ([DATA_DIR, LOCK_DIR, LOG_DIR] as $dir) {
 }
 
 // Set up logging
-$logFile = LOG_DIR . '/downdetector_' . date('Y-m-d') . '.log';
+$logFile = LOG_DIR . '/check4fail_' . date('Y-m-d') . '.log';
 ini_set('error_log', $logFile);
 
 // Load classes
@@ -56,7 +56,7 @@ function logMessage(string $level, string $message): void {
 function main(): int {
     $startTime = microtime(true);
     
-    logMessage('INFO', 'DownDetector started');
+    logMessage('INFO', 'Check4Fail started');
     
     // Parse command line arguments
     $configFile = BASE_DIR . '/config.toml';
@@ -73,7 +73,7 @@ function main(): int {
     }
     
     // Acquire lock to prevent race conditions
-    $lock = new Lock(LOCK_DIR . '/downdetector.lock', 3600);
+    $lock = new Lock(LOCK_DIR . '/check4fail.lock', 3600);
     
     if (!$lock->acquire()) {
         $lockInfo = $lock->getLockInfo();
@@ -202,7 +202,7 @@ function main(): int {
         $duration = round($endTime - $startTime, 2);
         
         logMessage('INFO', sprintf(
-            'DownDetector completed in %s seconds | Sites: %d | Anomalies: %d',
+            'Check4Fail completed in %s seconds | Sites: %d | Anomalies: %d',
             $duration,
             count($sites),
             $anomalyCount

@@ -1,4 +1,4 @@
-# DownDetector Lite - Project Summary
+# Check4Fail Lite - Project Summary
 
 ## ✅ Complete Feature Implementation
 
@@ -63,7 +63,7 @@
 ## 📁 Project Structure
 
 ```
-downdetector-lite/
+check4fail-lite/
 ├── check.php                    # Main cron script (executable)
 ├── test.php                     # Component test suite (executable)
 ├── setup.sh                     # Quick setup script (executable)
@@ -109,7 +109,7 @@ downdetector-lite/
 4. **Add to Cron**
    ```bash
    crontab -e
-   # Add: * * * * * cd /path/to/downdetector-lite && php check.php >> var/log/cron.log 2>&1
+   # Add: * * * * * cd /path/to/check4fail-lite && php check.php >> var/log/cron.log 2>&1
    ```
 
 ## 📊 Sample Data Format
@@ -256,7 +256,7 @@ Test run on example.com:
 ## 📞 Support
 
 Run component tests: `php test.php`
-Check logs: `tail -f var/log/downdetector_$(date +%Y-%m-%d).log`
+Check logs: `tail -f var/log/check4fail_$(date +%Y-%m-%d).log`
 View data: `cat data/*/$(date +%Y-%m-%d).json`
 
 ---

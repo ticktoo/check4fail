@@ -7,7 +7,7 @@ class EmailNotifier {
     private $fromEmail;
     private $fromName;
     
-    public function __construct(string $fromEmail = 'downdetector@localhost', string $fromName = 'DownDetector') {
+    public function __construct(string $fromEmail = 'check4fail@localhost', string $fromName = 'Check4Fail') {
         $this->fromEmail = $fromEmail;
         $this->fromName = $fromName;
     }
@@ -86,7 +86,7 @@ class EmailNotifier {
         $anomalies = $analysis['anomalies'];
         $stats = $analysis['historical_stats'];
         
-        $text = "DOWNDETECTOR ALERT\n";
+        $text = "CHECK4FAIL ALERT\n";
         $text .= str_repeat("=", 60) . "\n\n";
         
         $text .= "Site: {$siteName}\n";
@@ -124,7 +124,7 @@ class EmailNotifier {
         }
         
         $text .= "\n" . str_repeat("=", 60) . "\n";
-        $text .= "This is an automated message from DownDetector.\n";
+        $text .= "This is an automated message from Check4Fail.\n";
         
         return $text;
     }
@@ -145,7 +145,7 @@ class EmailNotifier {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DownDetector Alert</title>
+    <title>Check4Fail Alert</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background-color: #f4f4f4;">
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4f4f4; padding: 20px;">
@@ -156,7 +156,7 @@ class EmailNotifier {
                     <!-- Header -->
                     <tr>
                         <td style="background-color: #d32f2f; padding: 20px; text-align: center;">
-                            <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: bold;">⚠️ DownDetector Alert</h1>
+                            <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: bold;">⚠️ Check4Fail Alert</h1>
                         </td>
                     </tr>
                     
@@ -277,7 +277,7 @@ class EmailNotifier {
                     <tr>
                         <td style="background-color: #f5f5f5; padding: 15px; text-align: center; border-top: 1px solid #e0e0e0;">
                             <p style="margin: 0; color: #999; font-size: 12px;">
-                                This is an automated message from DownDetector.<br>
+                                This is an automated message from Check4Fail.<br>
                                 Generated on ' . date('Y-m-d H:i:s') . '
                             </p>
                         </td>

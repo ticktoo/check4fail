@@ -30,7 +30,7 @@ class SiteChecker {
             CURLOPT_CONNECTTIMEOUT => 10,
             CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_SSL_VERIFYHOST => 2,
-            CURLOPT_USERAGENT => 'DownDetector/1.0 (Health Monitor)',
+            CURLOPT_USERAGENT => 'Check4Fail/1.0 (Health Monitor)',
             CURLOPT_HEADER => false,
             CURLOPT_HEADERFUNCTION => function($curl, $header) use (&$responseHeaders) {
                 $len = strlen($header);
@@ -126,7 +126,7 @@ class SiteChecker {
                 CURLOPT_CONNECTTIMEOUT => 10,
                 CURLOPT_SSL_VERIFYPEER => true,
                 CURLOPT_SSL_VERIFYHOST => 2,
-                CURLOPT_USERAGENT => 'DownDetector/1.0 (Health Monitor)',
+                CURLOPT_USERAGENT => 'Check4Fail/1.0 (Health Monitor)',
                 CURLOPT_HEADER => false,
                 CURLOPT_HEADERFUNCTION => function($curl, $header) use (&$responseHeaders, $index) {
                     $len = strlen($header);

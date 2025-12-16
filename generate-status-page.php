@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * DownDetector - Static HTML Status Page Generator
+ * Check4Fail - Static HTML Status Page Generator
  * 
  * Generates a professional status page from collected statistics.
  * Creates a static HTML page suitable for hosting as a public status page.
@@ -24,7 +24,7 @@ require_once BASE_DIR . '/src/StatisticsStorage.php';
  * Display usage information
  */
 function showUsage(): void {
-    echo "DownDetector - Status Page Generator\n\n";
+    echo "Check4Fail - Status Page Generator\n\n";
     echo "Usage:\n";
     echo "  php generate-status-page.php [options]\n\n";
     echo "Options:\n";
@@ -835,7 +835,7 @@ HTML;
         
         <div class="footer">
             <p>Last updated: {$generatedAt} | Auto-refreshes every {$refresh} seconds</p>
-            <p>Powered by <a href="https://github.com/yourusername/downdetector-lite" target="_blank">DownDetector Lite</a></p>
+            <p>Powered by <a href="https://ticktoo.com" target="_blank">Check4Fail</a></p>
         </div>
     </div>
     
@@ -1095,7 +1095,7 @@ function main(array $argv): int {
         }
     }
     
-    echo "DownDetector Status Page Generator\n";
+    echo "Check4Fail Status Page Generator\n";
     echo str_repeat("=", 60) . "\n\n";
     
     // Create output directory

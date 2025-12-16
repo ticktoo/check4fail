@@ -1,4 +1,4 @@
-# DownDetector Lite
+# Check4Fail Lite
 
 A lightweight, PHP-based website monitoring and anomaly detection system that runs via cron to check site availability, performance, and detect issues.
 
@@ -29,7 +29,7 @@ A lightweight, PHP-based website monitoring and anomaly detection system that ru
 ### 1. Clone or Copy Files
 
 ```bash
-cd /home/sebastian/Codebase/downdetector-lite
+cd /home/sebastian/Codebase/check4fail-lite
 ```
 
 ### 2. Configure Sites to Monitor
@@ -117,11 +117,11 @@ php check.php --config=/path/to/custom/config.toml
 Add to crontab (`crontab -e`):
 
 ```cron
-# Run DownDetector every minute
-* * * * * cd /home/sebastian/Codebase/downdetector-lite && php check.php >> var/log/cron.log 2>&1
+# Run Check4Fail every minute
+* * * * * cd /home/sebastian/Codebase/check4fail-lite && php check.php >> var/log/cron.log 2>&1
 
 # Or every 5 minutes:
-*/5 * * * * cd /home/sebastian/Codebase/downdetector-lite && php check.php >> var/log/cron.log 2>&1
+*/5 * * * * cd /home/sebastian/Codebase/check4fail-lite && php check.php >> var/log/cron.log 2>&1
 ```
 
 ### 6. Generate Reports (Optional)
@@ -162,17 +162,17 @@ The status page includes:
 Serve via web server (see `nginx.conf.example` or `apache.conf.example`).
 
 ```cron
-# Run DownDetector every minute
-* * * * * cd /home/sebastian/Codebase/downdetector-lite && php check.php >> var/log/cron.log 2>&1
+# Run Check4Fail every minute
+* * * * * cd /home/sebastian/Codebase/check4fail-lite && php check.php >> var/log/cron.log 2>&1
 
 # Or every 5 minutes:
-*/5 * * * * cd /home/sebastian/Codebase/downdetector-lite && php check.php >> var/log/cron.log 2>&1
+*/5 * * * * cd /home/sebastian/Codebase/check4fail-lite && php check.php >> var/log/cron.log 2>&1
 ```
 
 ## Directory Structure
 
 ```
-downdetector-lite/
+check4fail-lite/
 ├── check.php                  # Main cron script
 ├── config.toml               # Your configuration (create from .example)
 ├── config.toml.example       # Example configuration
@@ -227,7 +227,7 @@ downdetector-lite/
 
 ## Anomaly Detection
 
-DownDetector automatically detects:
+Check4Fail automatically detects:
 
 1. **Site Down** - Failed requests, timeouts
 2. **HTTP Status Changes** - Unexpected status codes (500, 503, etc.)
@@ -294,7 +294,7 @@ Files older than 7 days are automatically deleted (configurable).
 ## Logging
 
 Logs are written to:
-- `var/log/downdetector_YYYY-MM-DD.log` - Daily log files
+- `var/log/check4fail_YYYY-MM-DD.log` - Daily log files
 - `var/log/cron.log` - Cron execution log
 
 Log levels:
@@ -319,7 +319,7 @@ Log levels:
 ### Lock file issues
 
 1. Check lock directory: `ls -la var/lock/`
-2. Remove stale lock: `rm var/lock/downdetector.lock`
+2. Remove stale lock: `rm var/lock/check4fail.lock`
 3. Check permissions: `chmod 755 var/lock`
 
 ### High memory usage
@@ -329,7 +329,7 @@ Log levels:
 3. Reduce retention days
 4. Check for large response bodies
 
-## Extending DownDetector
+## Extending Check4Fail
 
 ### Future Enhancements
 

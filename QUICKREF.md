@@ -1,4 +1,4 @@
-# DownDetector Lite - Quick Reference
+# Check4Fail Lite - Quick Reference
 
 ## 🚀 Common Commands
 
@@ -55,7 +55,7 @@ cat config.toml.example # View example config
 ### Monitoring
 ```bash
 # View logs
-tail -f var/log/downdetector_$(date +%Y-%m-%d).log
+tail -f var/log/check4fail_$(date +%Y-%m-%d).log
 tail -f var/log/cron.log
 
 # View data
@@ -70,8 +70,8 @@ php status.php
 ```bash
 crontab -e              # Edit crontab
 # Add one of:
-* * * * * cd /home/sebastian/Codebase/downdetector-lite && php check.php >> var/log/cron.log 2>&1
-*/5 * * * * cd /home/sebastian/Codebase/downdetector-lite && php check.php >> var/log/cron.log 2>&1
+* * * * * cd /home/sebastian/Codebase/check4fail-lite && php check.php >> var/log/cron.log 2>&1
+*/5 * * * * cd /home/sebastian/Codebase/check4fail-lite && php check.php >> var/log/cron.log 2>&1
 ```
 
 ## 📋 Configuration Template
@@ -101,7 +101,7 @@ tail -f /var/log/mail.log
 ### Lock issues
 ```bash
 # Remove stale lock
-rm var/lock/downdetector.lock
+rm var/lock/check4fail.lock
 
 # Check lock status
 ls -la var/lock/
@@ -123,9 +123,9 @@ php check.php 2>&1 | tee -a debug.log
 ```
 data/{site_name}/YYYY-MM-DD.json      # Daily metrics
 data/{site_name}/YYYY-MM-DD.json.gz   # Compressed
-var/log/downdetector_YYYY-MM-DD.log   # Daily logs
+var/log/check4fail_YYYY-MM-DD.log   # Daily logs
 var/log/cron.log                      # Cron output
-var/lock/downdetector.lock            # Lock file
+var/lock/check4fail.lock            # Lock file
 ```
 
 ## ⚙️ Key Settings
@@ -182,7 +182,7 @@ php -m | grep -E "curl|json"
 service cron status
 
 # Are checks being executed?
-grep "DownDetector started" var/log/downdetector_$(date +%Y-%m-%d).log
+grep "Check4Fail started" var/log/check4fail_$(date +%Y-%m-%d).log
 
 # What's the latest check result?
 php status.php

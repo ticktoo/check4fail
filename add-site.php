@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * DownDetector - Add Site Helper
+ * Check4Fail - Add Site Helper
  * 
  * Quick tool to add sites to config.toml with auto-generated settings.
  * 
@@ -23,7 +23,7 @@ define('CONFIG_FILE', BASE_DIR . '/config.toml');
  * Display usage information
  */
 function showUsage(): void {
-    echo "DownDetector - Add Site Helper\n\n";
+    echo "Check4Fail - Add Site Helper\n\n";
     echo "Usage:\n";
     echo "  php add-site.php <url> [notification_email] [options]\n\n";
     echo "Arguments:\n";

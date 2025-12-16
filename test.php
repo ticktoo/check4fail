@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * Test script for DownDetector components
+ * Test script for Check4Fail components
  */
 
 require_once __DIR__ . '/src/ConfigParser.php';
@@ -11,7 +11,7 @@ require_once __DIR__ . '/src/StatisticsStorage.php';
 require_once __DIR__ . '/src/AnomalyDetector.php';
 require_once __DIR__ . '/src/EmailNotifier.php';
 
-echo "DownDetector Component Tests\n";
+echo "Check4Fail Component Tests\n";
 echo str_repeat("=", 60) . "\n\n";
 
 // Test 1: Config Parser
@@ -148,7 +148,7 @@ echo "\n";
 // Test 6: Email Notifier (structure test only, no actual sending)
 echo "Test 6: Email Notifier\n";
 echo str_repeat("-", 60) . "\n";
-$notifier = new EmailNotifier('test@localhost', 'DownDetector Test');
+$notifier = new EmailNotifier('test@localhost', 'Check4Fail Test');
 echo "✅ Email notifier initialized\n";
 echo "   (Email sending requires configured mail server)\n";
 echo "\n";
@@ -160,4 +160,4 @@ echo "\n";
 
 echo str_repeat("=", 60) . "\n";
 echo "All component tests completed!\n";
-echo "\nReady to use DownDetector. Run: php check.php\n";
+echo "\nReady to use Check4Fail. Run: php check.php\n";
