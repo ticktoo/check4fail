@@ -163,6 +163,34 @@ The status page includes:
 
 Serve via web server (see `nginx.conf.example` or `apache.conf.example`).
 
+### 8. Repair Statistics (Optional)
+
+Remove false positive failures caused by monitoring bugs or network issues:
+```bash
+# List all monitored sites
+php repair.php --list-sites
+
+# Show recent errors for a site
+php repair.php --site="example.com" --list-errors
+
+# Remove the most recent failed check
+php repair.php --site="example.com" --silence-last-error
+
+# Remove the last 5 failed checks
+php repair.php --site="example.com" --silence-last-error --count=5
+
+# Remove a specific check by exact date and time
+php repair.php --site="example.com" --remove-date="2025-12-16" --remove-time="14:30:00"
+```
+
+**Note:** The repair tool physically removes failed checks from statistics. This is useful when:
+- Monitoring bugs cause false positives
+- Network issues unrelated to the destination site
+- Testing/debugging caused erroneous failures
+- You need to clean up statistics for accurate reporting
+
+The tool can be called consecutively to remove errors one at a time.
+
 ```cron
 # Run Check4Fail every minute
 * * * * * cd /path/to/check4fail && php check.php >> var/log/cron.log 2>&1

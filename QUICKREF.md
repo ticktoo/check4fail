@@ -46,6 +46,24 @@ php generate-status-page.php --output=/var/www/status
 xdg-open public_html/index.html
 ```
 
+### Repair Statistics
+```bash
+# List all monitored sites
+php repair.php --list-sites
+
+# Show recent errors
+php repair.php --site="example.com" --list-errors
+
+# Remove most recent error
+php repair.php --site="example.com" --silence-last-error
+
+# Remove multiple errors
+php repair.php --site="example.com" --silence-last-error --count=5
+
+# Remove specific check
+php repair.php --site="example.com" --remove-date="2025-12-16" --remove-time="14:30:00"
+```
+
 ### Configuration
 ```bash
 nano config.toml        # Edit configuration
