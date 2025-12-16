@@ -91,6 +91,58 @@ function calculateUptime(array $checks, array $historicalStats): float {
 }
 
 /**
+ * Extract incidents from checks that caused down-rating
+ */
+function extractIncidents(array $checks, array $historicalStats): array {
+    if (empty($checks)) return [];
+    
+    $incidents = [];
+    $avgResponseTime = $historicalStats['avg_response_time'] ?? 0;
+    $avgSize = $historicalStats['avg_size'] ?? 0;
+    
+    foreach ($checks as $check) {
+        $reasons = [];
+        
+        // Check 1: Complete failure
+        if (!$check['success']) {
+            $reasons[] = "Site down (HTTP {$check['http_code']})";
+        }
+        
+        // Check 2: Extremely slow response
+        if ($avgResponseTime > 0 && $check['response_time'] > ($avgResponseTime * 3)) {
+            $multiplier = round($check['response_time'] / $avgResponseTime, 1);
+            $reasons[] = "Slow response ({$multiplier}× average, {$check['response_time']}ms vs {$avgResponseTime}ms avg)";
+        }
+        
+        // Check 3: Size anomaly
+        if ($avgSize > 0) {
+            $sizeDiff = abs($check['size_download'] - $avgSize) / $avgSize;
+            if ($sizeDiff > 0.5) {
+                $percentDiff = round($sizeDiff * 100, 1);
+                $reasons[] = "Content size anomaly ({$percentDiff}% difference, " . formatBytes($check['size_download']) . " vs " . formatBytes($avgSize) . " avg)";
+            }
+        }
+        
+        // If any issues found, record the incident
+        if (!empty($reasons)) {
+            $incidents[] = [
+                'datetime' => $check['datetime'],
+                'timestamp' => $check['timestamp'],
+                'reasons' => $reasons,
+                'http_code' => $check['http_code'],
+                'response_time' => $check['response_time'],
+                'size' => $check['size_download']
+            ];
+        }
+    }
+    
+    // Sort by timestamp descending (newest first)
+    usort($incidents, fn($a, $b) => $b['timestamp'] - $a['timestamp']);
+    
+    return $incidents;
+}
+
+/**
  * Get status color based on uptime
  */
 function getStatusColor(float $uptime): string {
@@ -176,6 +228,7 @@ function generateHtmlPage(array $sitesData, array $config, int $days): string {
         }
     }
     $overallUptime = $activeCount > 0 ? $overallUptime / $activeCount : 0;
+    $overallUptimeFormatted = number_format($overallUptime, 2, '.', '');
     $overallColor = getStatusColor($overallUptime);
     $overallStatus = getStatusText($overallUptime);
     
@@ -395,6 +448,63 @@ function generateHtmlPage(array $sitesData, array $config, int $days): string {
             background: #f9fafb;
         }
         
+        .incidents-section {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .incidents-section.active {
+            display: block;
+        }
+        
+        .incidents-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .incident-item {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+        }
+        
+        .incident-item.warning {
+            background: #fef9c3;
+            border-left-color: #eab308;
+        }
+        
+        .incident-time {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .incident-reason {
+            color: #4b5563;
+            padding: 4px 0;
+            font-size: 0.9rem;
+        }
+        
+        .incident-reason::before {
+            content: "• ";
+            color: #ef4444;
+            font-weight: bold;
+        }
+        
+        .incident-details {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+        
         .expand-btn {
             background: #667eea;
             color: white;
@@ -475,7 +585,7 @@ HTML;
     
     $html .= <<<HTML
             <h1>{$title}</h1>
-            <div class="overall-status">{$overallStatus} - {$overallUptime}% Uptime</div>
+            <div class="overall-status">{$overallStatus} - {$overallUptimeFormatted}% Uptime</div>
         </div>
         
         <div class="stats-overview">
@@ -605,6 +715,76 @@ HTML;
         $html .= <<<HTML
                 </tbody>
             </table>
+            
+            <div class="incidents-section" id="incidents_{$detailsId}">
+                <div class="incidents-header">
+                    Incidents & Performance Issues
+                </div>
+
+HTML;
+
+        // Extract and display incidents
+        $allChecks = [];
+        foreach ($siteData['history'] as $dayData) {
+            $allChecks = array_merge($allChecks, $dayData);
+        }
+        $incidents = extractIncidents($allChecks, $stats);
+        
+        if (empty($incidents)) {
+            $html .= <<<HTML
+                <div style="padding: 20px; text-align: center; color: #10b981; font-weight: 600;">
+                    ✓ No incidents detected in the last {$days} days
+                </div>
+
+HTML;
+        } else {
+            $incidentCount = count($incidents);
+            $displayLimit = 20; // Show last 20 incidents
+            $displayIncidents = array_slice($incidents, 0, $displayLimit);
+            
+            foreach ($displayIncidents as $incident) {
+                $incidentClass = $incident['http_code'] == 0 || !isset($incident['http_code']) ? 'incident-item' : 'incident-item warning';
+                $datetime = htmlspecialchars($incident['datetime']);
+                $httpCode = $incident['http_code'];
+                $responseTime = round($incident['response_time'], 2);
+                $size = formatBytes($incident['size']);
+                
+                $html .= <<<HTML
+                <div class="{$incidentClass}">
+                    <div class="incident-time">{$datetime}</div>
+
+HTML;
+                
+                foreach ($incident['reasons'] as $reason) {
+                    $reason = htmlspecialchars($reason);
+                    $html .= <<<HTML
+                    <div class="incident-reason">{$reason}</div>
+
+HTML;
+                }
+                
+                $html .= <<<HTML
+                    <div class="incident-details">
+                        HTTP {$httpCode} | Response: {$responseTime}ms | Size: {$size}
+                    </div>
+                </div>
+
+HTML;
+            }
+            
+            if ($incidentCount > $displayLimit) {
+                $remaining = $incidentCount - $displayLimit;
+                $html .= <<<HTML
+                <div style="padding: 15px; text-align: center; color: #6b7280; font-style: italic;">
+                    ... and {$remaining} more incident(s) in the last {$days} days
+                </div>
+
+HTML;
+            }
+        }
+        
+        $html .= <<<HTML
+            </div>
         </div>
 
 HTML;
@@ -638,15 +818,18 @@ HTML;
         function toggleDetails(chartId, detailsId) {
             const chartContainer = document.getElementById(chartId);
             const detailsTable = document.getElementById(detailsId);
+            const incidentsSection = document.getElementById('incidents_' + detailsId);
             
             const isActive = chartContainer.classList.contains('active');
             
             if (isActive) {
                 chartContainer.classList.remove('active');
                 detailsTable.classList.remove('active');
+                if (incidentsSection) incidentsSection.classList.remove('active');
             } else {
                 chartContainer.classList.add('active');
                 detailsTable.classList.add('active');
+                if (incidentsSection) incidentsSection.classList.add('active');
                 
                 // Initialize chart if not already done
                 if (!chartContainer.dataset.initialized) {
@@ -656,10 +839,29 @@ HTML;
             }
         }
         
+        function getUptimeColor(uptime) {
+            if (uptime >= 99.9) return '#10b981'; // green
+            if (uptime >= 99.0) return '#22c55e'; // light green
+            if (uptime >= 95.0) return '#eab308'; // yellow
+            if (uptime >= 90.0) return '#f97316'; // orange
+            return '#ef4444'; // red
+        }
+        
         function initChart(chartId) {
             const data = chartData[chartId];
             const canvas = document.getElementById(chartId + '_canvas');
             const ctx = canvas.getContext('2d');
+            
+            // Generate colors for each uptime data point
+            const uptimeColors = data.uptime.map(uptime => getUptimeColor(uptime));
+            const uptimeBackgroundColors = data.uptime.map(uptime => {
+                const color = getUptimeColor(uptime);
+                // Convert hex to rgba with transparency
+                const r = parseInt(color.slice(1, 3), 16);
+                const g = parseInt(color.slice(3, 5), 16);
+                const b = parseInt(color.slice(5, 7), 16);
+                return 'rgba(' + r + ', ' + g + ', ' + b + ', 0.1)';
+            });
             
             new Chart(ctx, {
                 type: 'line',
@@ -669,10 +871,20 @@ HTML;
                         {
                             label: 'Uptime %',
                             data: data.uptime,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderColor: uptimeColors,
+                            backgroundColor: uptimeBackgroundColors,
+                            segment: {
+                                borderColor: ctx => {
+                                    const uptime = ctx.p1.parsed.y;
+                                    return getUptimeColor(uptime);
+                                }
+                            },
                             tension: 0.4,
-                            yAxisID: 'y'
+                            yAxisID: 'y',
+                            pointBackgroundColor: uptimeColors,
+                            pointBorderColor: uptimeColors,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
                         },
                         {
                             label: 'Response Time (ms)',
