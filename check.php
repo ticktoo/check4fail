@@ -150,24 +150,35 @@ function main(): int {
                     count($analysis['anomalies'])
                 ));
                 
+                // Check if there are any critical/error level anomalies (not just warnings)
+                $hasHardError = false;
                 foreach ($analysis['anomalies'] as $anomaly) {
                     logMessage('WARNING', sprintf(
                         '  - [%s] %s',
                         $anomaly['severity'],
                         $anomaly['message']
                     ));
+                    
+                    // Critical or error severity = hard error that needs notification
+                    if (in_array($anomaly['severity'], ['critical', 'error'])) {
+                        $hasHardError = true;
+                    }
                 }
                 
-                // Send notification
-                try {
-                    $notificationSent = $notifier->sendAnomalyNotification($analysis, $siteConfig);
-                    if ($notificationSent) {
-                        logMessage('INFO', "Notification sent to {$siteConfig['notification_email']}");
-                    } else {
-                        logMessage('ERROR', "Failed to send notification to {$siteConfig['notification_email']}");
+                // Only send notification for hard errors (critical/error), not warnings
+                if ($hasHardError) {
+                    try {
+                        $notificationSent = $notifier->sendAnomalyNotification($analysis, $siteConfig);
+                        if ($notificationSent) {
+                            logMessage('INFO', "Notification sent to {$siteConfig['notification_email']}");
+                        } else {
+                            logMessage('ERROR', "Failed to send notification to {$siteConfig['notification_email']}");
+                        }
+                    } catch (Exception $e) {
+                        logMessage('ERROR', "Error sending notification: {$e->getMessage()}");
                     }
-                } catch (Exception $e) {
-                    logMessage('ERROR', "Error sending notification: {$e->getMessage()}");
+                } else {
+                    logMessage('INFO', "Only warnings detected for {$siteName}, skipping email notification");
                 }
             }
         }

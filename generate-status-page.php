@@ -56,42 +56,28 @@ function formatBytes($bytes, $precision = 2): string {
 
 /**
  * Calculate uptime percentage
- * Considers both complete failures AND degraded performance
+ * Only counts complete failures (success=false) as downtime
+ * Anomalies (slow response, size changes) are warnings, not downtime
  */
 function calculateUptime(array $checks, array $historicalStats): float {
     if (empty($checks)) return 0;
     
-    $healthyCount = 0;
-    $avgResponseTime = $historicalStats['avg_response_time'] ?? 0;
-    $avgSize = $historicalStats['avg_size'] ?? 0;
+    $successfulCount = 0;
     
     foreach ($checks as $check) {
-        // Check 1: Must be successful
-        if (!$check['success']) {
-            continue;
+        // Only count actual success/failure, not performance anomalies
+        if ($check['success']) {
+            $successfulCount++;
         }
-        
-        // Check 2: Response time not excessively slow (>3x average)
-        if ($avgResponseTime > 0 && $check['response_time'] > ($avgResponseTime * 3)) {
-            continue;
-        }
-        
-        // Check 3: Size not drastically different (>50%)
-        if ($avgSize > 0) {
-            $sizeDiff = abs($check['size_download'] - $avgSize) / $avgSize;
-            if ($sizeDiff > 0.5) {
-                continue;
-            }
-        }
-        
-        $healthyCount++;
     }
     
-    return ($healthyCount / count($checks)) * 100;
+    return ($successfulCount / count($checks)) * 100;
 }
 
 /**
- * Extract incidents from checks that caused down-rating
+ * Extract incidents from checks (errors and warnings)
+ * Errors = Site down (success=false)
+ * Warnings = Performance anomalies (slow response, size changes)
  */
 function extractIncidents(array $checks, array $historicalStats): array {
     if (empty($checks)) return [];
@@ -102,20 +88,22 @@ function extractIncidents(array $checks, array $historicalStats): array {
     
     foreach ($checks as $check) {
         $reasons = [];
+        $isError = false;
         
-        // Check 1: Complete failure
+        // Check 1: Complete failure (ERROR)
         if (!$check['success']) {
             $reasons[] = "Site down (HTTP {$check['http_code']})";
+            $isError = true;
         }
         
-        // Check 2: Extremely slow response
-        if ($avgResponseTime > 0 && $check['response_time'] > ($avgResponseTime * 3)) {
+        // Check 2: Extremely slow response (WARNING)
+        if ($check['success'] && $avgResponseTime > 0 && $check['response_time'] > ($avgResponseTime * 3)) {
             $multiplier = round($check['response_time'] / $avgResponseTime, 1);
             $reasons[] = "Slow response ({$multiplier}× average, {$check['response_time']}ms vs {$avgResponseTime}ms avg)";
         }
         
-        // Check 3: Size anomaly
-        if ($avgSize > 0) {
+        // Check 3: Size anomaly (WARNING)
+        if ($check['success'] && $avgSize > 0) {
             $sizeDiff = abs($check['size_download'] - $avgSize) / $avgSize;
             if ($sizeDiff > 0.5) {
                 $percentDiff = round($sizeDiff * 100, 1);
@@ -131,7 +119,9 @@ function extractIncidents(array $checks, array $historicalStats): array {
                 'reasons' => $reasons,
                 'http_code' => $check['http_code'],
                 'response_time' => $check['response_time'],
-                'size' => $check['size_download']
+                'size' => $check['size_download'],
+                'is_error' => $isError,
+                'is_warning' => !$isError
             ];
         }
     }
@@ -677,6 +667,7 @@ HTML;
                         <th>Date</th>
                         <th>Checks</th>
                         <th>Uptime</th>
+                        <th>Warnings</th>
                         <th>Avg Response</th>
                         <th>Status</th>
                     </tr>
@@ -700,11 +691,17 @@ HTML;
             $dailyStatus = getStatusText($dailyUptime);
             $dailyColor = getStatusColor($dailyUptime);
             
+            // Count warnings (anomalies) for this day
+            $dailyIncidents = extractIncidents($checks, $stats);
+            $warningCount = count(array_filter($dailyIncidents, fn($i) => $i['is_warning']));
+            $warningDisplay = $warningCount > 0 ? "<span style=\"color: #eab308; font-weight: 600;\">{$warningCount}</span>" : "-";
+            
             $html .= <<<HTML
                     <tr>
                         <td>{$date}</td>
                         <td>{$stats['count']}</td>
                         <td>{$dailyUptime}%</td>
+                        <td>{$warningDisplay}</td>
                         <td>{$avgResponse} ms</td>
                         <td><span style="color: {$dailyColor}; font-weight: 600;">●</span> {$dailyStatus}</td>
                     </tr>
@@ -743,7 +740,9 @@ HTML;
             $displayIncidents = array_slice($incidents, 0, $displayLimit);
             
             foreach ($displayIncidents as $incident) {
-                $incidentClass = $incident['http_code'] == 0 || !isset($incident['http_code']) ? 'incident-item' : 'incident-item warning';
+                // Use is_error flag to determine styling
+                $incidentClass = $incident['is_error'] ? 'incident-item' : 'incident-item warning';
+                $incidentLabel = $incident['is_error'] ? 'ERROR' : 'WARNING';
                 $datetime = htmlspecialchars($incident['datetime']);
                 $httpCode = $incident['http_code'];
                 $responseTime = round($incident['response_time'], 2);
@@ -751,7 +750,7 @@ HTML;
                 
                 $html .= <<<HTML
                 <div class="{$incidentClass}">
-                    <div class="incident-time">{$datetime}</div>
+                    <div class="incident-time">[{$incidentLabel}] {$datetime}</div>
 
 HTML;
                 
