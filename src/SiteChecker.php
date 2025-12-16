@@ -166,15 +166,22 @@ class SiteChecker {
             
             // Use cURL's accurate individual timing
             $totalTime = curl_getinfo($ch, CURLINFO_TOTAL_TIME);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $expectedStatus = $siteConfig['expected_status'] ?? 200;
+            
+            // Success means: response received AND HTTP status matches expected
+            $responseReceived = $responseBody !== false && $responseBody !== null;
+            $statusMatches = ($httpCode == $expectedStatus);
+            $isSuccess = $responseReceived && $statusMatches;
             
             $metrics = [
                 'timestamp' => time(),
                 'datetime' => date('Y-m-d H:i:s'),
                 'url' => $siteConfig['url'],
                 'site_name' => $siteConfig['name'] ?? $siteConfig['url'],
-                'success' => $responseBody !== false && $responseBody !== null,
+                'success' => $isSuccess,
                 'response_time' => round($totalTime * 1000, 2),
-                'http_code' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
+                'http_code' => $httpCode,
                 'size_download' => curl_getinfo($ch, CURLINFO_SIZE_DOWNLOAD),
                 'header_size' => curl_getinfo($ch, CURLINFO_HEADER_SIZE),
                 'namelookup_time' => round(curl_getinfo($ch, CURLINFO_NAMELOOKUP_TIME) * 1000, 2),
