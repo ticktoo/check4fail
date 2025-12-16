@@ -56,12 +56,38 @@ function formatBytes($bytes, $precision = 2): string {
 
 /**
  * Calculate uptime percentage
+ * Considers both complete failures AND degraded performance
  */
-function calculateUptime(array $checks): float {
+function calculateUptime(array $checks, array $historicalStats): float {
     if (empty($checks)) return 0;
     
-    $successful = count(array_filter($checks, fn($c) => $c['success']));
-    return ($successful / count($checks)) * 100;
+    $healthyCount = 0;
+    $avgResponseTime = $historicalStats['avg_response_time'] ?? 0;
+    $avgSize = $historicalStats['avg_size'] ?? 0;
+    
+    foreach ($checks as $check) {
+        // Check 1: Must be successful
+        if (!$check['success']) {
+            continue;
+        }
+        
+        // Check 2: Response time not excessively slow (>3x average)
+        if ($avgResponseTime > 0 && $check['response_time'] > ($avgResponseTime * 3)) {
+            continue;
+        }
+        
+        // Check 3: Size not drastically different (>50%)
+        if ($avgSize > 0) {
+            $sizeDiff = abs($check['size_download'] - $avgSize) / $avgSize;
+            if ($sizeDiff > 0.5) {
+                continue;
+            }
+        }
+        
+        $healthyCount++;
+    }
+    
+    return ($healthyCount / count($checks)) * 100;
 }
 
 /**
@@ -89,7 +115,7 @@ function getStatusText(float $uptime): string {
 /**
  * Generate chart data for a site
  */
-function generateChartData(array $history, int $days): array {
+function generateChartData(array $history, int $days, array $historicalStats): array {
     $labels = [];
     $uptimeData = [];
     $responseTimeData = [];
@@ -106,7 +132,7 @@ function generateChartData(array $history, int $days): array {
         
         if (isset($history[$date]) && !empty($history[$date])) {
             $checks = $history[$date];
-            $uptime = calculateUptime($checks);
+            $uptime = calculateUptime($checks, $historicalStats);
             $uptimeData[] = round($uptime, 2);
             
             $responseTimes = array_filter(array_column($checks, 'response_time'), fn($t) => $t > 0);
@@ -139,7 +165,13 @@ function generateHtmlPage(array $sitesData, array $config, int $days): string {
     $activeCount = 0;
     foreach ($sitesData as $site) {
         if ($site['stats']['count'] > 0) {
-            $overallUptime += $site['stats']['success_rate'];
+            // Calculate uptime considering degraded performance
+            $allChecks = [];
+            foreach ($site['history'] as $dayData) {
+                $allChecks = array_merge($allChecks, $dayData);
+            }
+            $siteUptime = calculateUptime($allChecks, $site['stats']);
+            $overallUptime += $siteUptime;
             $activeCount++;
         }
     }
@@ -468,7 +500,14 @@ HTML;
         $siteName = htmlspecialchars($siteData['name']);
         $siteUrl = htmlspecialchars($siteData['url']);
         $stats = $siteData['stats'];
-        $uptime = $stats['success_rate'];
+        
+        // Calculate uptime considering degraded performance
+        $allChecks = [];
+        foreach ($siteData['history'] as $dayData) {
+            $allChecks = array_merge($allChecks, $dayData);
+        }
+        $uptime = calculateUptime($allChecks, $stats);
+        
         $statusColor = getStatusColor($uptime);
         $statusText = getStatusText($uptime);
         $chartId = 'chart_' . md5($siteName);
@@ -545,7 +584,7 @@ HTML;
             $checks = $history[$date];
             if (empty($checks)) continue;
             
-            $dailyUptime = calculateUptime($checks);
+            $dailyUptime = calculateUptime($checks, $stats);
             $responseTimes = array_filter(array_column($checks, 'response_time'), fn($t) => $t > 0);
             $avgResponse = !empty($responseTimes) ? round(array_sum($responseTimes) / count($responseTimes), 2) : 0;
             $dailyStatus = getStatusText($dailyUptime);
@@ -588,7 +627,7 @@ HTML;
     foreach ($sitesData as $siteData) {
         $siteName = $siteData['name'];
         $chartId = 'chart_' . md5($siteName);
-        $chartData = generateChartData($siteData['history'], $days);
+        $chartData = generateChartData($siteData['history'], $days, $siteData['stats']);
         
         $html .= "            '{$chartId}': " . json_encode($chartData) . ",\n";
     }
