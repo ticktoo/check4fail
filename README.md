@@ -29,7 +29,7 @@ A lightweight, PHP-based website monitoring and anomaly detection system that ru
 ### 1. Clone or Copy Files
 
 ```bash
-cd /home/sebastian/Codebase/check4fail-lite
+cd /path/to/check4fail
 ```
 
 ### 2. Configure Sites to Monitor
@@ -118,10 +118,10 @@ Add to crontab (`crontab -e`):
 
 ```cron
 # Run Check4Fail every minute
-* * * * * cd /home/sebastian/Codebase/check4fail-lite && php check.php >> var/log/cron.log 2>&1
+* * * * * cd /path/to/check4fail && php check.php >> var/log/cron.log 2>&1
 
 # Or every 5 minutes:
-*/5 * * * * cd /home/sebastian/Codebase/check4fail-lite && php check.php >> var/log/cron.log 2>&1
+*/5 * * * * cd /path/to/check4fail && php check.php >> var/log/cron.log 2>&1
 ```
 
 ### 6. Generate Reports (Optional)
@@ -163,10 +163,10 @@ Serve via web server (see `nginx.conf.example` or `apache.conf.example`).
 
 ```cron
 # Run Check4Fail every minute
-* * * * * cd /home/sebastian/Codebase/check4fail-lite && php check.php >> var/log/cron.log 2>&1
+* * * * * cd /path/to/check4fail && php check.php >> var/log/cron.log 2>&1
 
 # Or every 5 minutes:
-*/5 * * * * cd /home/sebastian/Codebase/check4fail-lite && php check.php >> var/log/cron.log 2>&1
+*/5 * * * * cd /path/to/check4fail && php check.php >> var/log/cron.log 2>&1
 ```
 
 ## Directory Structure
@@ -355,6 +355,15 @@ For issues or questions, check:
 - Cron logs
 - Mail server status
 
+## License
+
+Check4Fail is released under the MIT License. See [LICENSE](LICENSE) file for details.
+
+### Third-Party Dependencies
+
+This project uses Chart.js (MIT License) for status page visualizations. See [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) for details.
+
 ## Author
 
 Created for efficient, lightweight website monitoring without external dependencies.
+

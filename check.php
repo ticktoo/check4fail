@@ -6,6 +6,11 @@
  * This script checks configured sites for availability and performance issues.
  * It should be run via cron at regular intervals (e.g., every minute).
  * 
+ * @package   Check4Fail
+ * @author    Check4Fail Contributors
+ * @license   MIT License
+ * @link      https://github.com/yourusername/check4fail
+ * 
  * Usage: php check.php [--config=/path/to/config.toml]
  */
 

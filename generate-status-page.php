@@ -257,6 +257,7 @@ function generateHtmlPage(array $sitesData, array $config, int $days): string {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="refresh" content="{$refresh}">
     <title>{$title}</title>
+    <!-- Chart.js v4.4.0 - MIT License - https://github.com/chartjs/Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {

@@ -12,7 +12,7 @@ server {
     # Redirect HTTP to HTTPS (optional, recommended)
     # return 301 https://$server_name$request_uri;
     
-    root /home/sebastian/Codebase/check4fail-lite/public_html;
+    root /path/to/check4fail/public_html;
     index index.html;
     
     # Security headers
@@ -52,7 +52,7 @@ server {
 #     ssl_protocols TLSv1.2 TLSv1.3;
 #     ssl_ciphers HIGH:!aNULL:!MD5;
 #     
-#     root /home/sebastian/Codebase/check4fail-lite/public_html;
+#     root /path/to/check4fail/public_html;
 #     index index.html;
 #     
 #     # Same configuration as above

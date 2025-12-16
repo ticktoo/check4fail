@@ -70,8 +70,8 @@ php status.php
 ```bash
 crontab -e              # Edit crontab
 # Add one of:
-* * * * * cd /home/sebastian/Codebase/check4fail-lite && php check.php >> var/log/cron.log 2>&1
-*/5 * * * * cd /home/sebastian/Codebase/check4fail-lite && php check.php >> var/log/cron.log 2>&1
+* * * * * cd /path/to/check4fail && php check.php >> var/log/cron.log 2>&1
+*/5 * * * * cd /path/to/check4fail && php check.php >> var/log/cron.log 2>&1
 ```
 
 ## 📋 Configuration Template
