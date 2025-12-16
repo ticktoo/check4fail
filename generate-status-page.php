@@ -155,35 +155,68 @@ function getStatusText(float $uptime): string {
 }
 
 /**
- * Generate chart data for a site
+ * Generate chart data for a site - hourly min/max/avg for last 24 hours
  */
 function generateChartData(array $history, int $days, array $historicalStats): array {
     $labels = [];
-    $responseTimeData = [];
+    $minData = [];
+    $maxData = [];
+    $avgData = [];
     
-    // Get dates in order
-    $dates = array_keys($history);
-    sort($dates);
+    // Get all checks from history
+    $allChecks = [];
+    foreach ($history as $dayData) {
+        $allChecks = array_merge($allChecks, $dayData);
+    }
     
-    // Fill in missing days with null (so chart shows gaps)
-    $startDate = strtotime("-{$days} days");
-    for ($i = 0; $i < $days; $i++) {
-        $date = date('Y-m-d', strtotime("+{$i} days", $startDate));
-        $labels[] = date('M j', strtotime($date));
-        
-        if (isset($history[$date]) && !empty($history[$date])) {
-            $checks = $history[$date];
-            $responseTimes = array_filter(array_column($checks, 'response_time'), fn($t) => $t > 0);
-            $avgResponseTime = !empty($responseTimes) ? array_sum($responseTimes) / count($responseTimes) : null;
-            $responseTimeData[] = $avgResponseTime !== null ? round($avgResponseTime, 2) : null;
-        } else {
-            $responseTimeData[] = null;
+    // Sort by timestamp
+    usort($allChecks, fn($a, $b) => $a['timestamp'] - $b['timestamp']);
+    
+    // Get last 24 hours
+    $now = time();
+    $twentyFourHoursAgo = $now - (24 * 3600);
+    $recentChecks = array_filter($allChecks, fn($c) => $c['timestamp'] >= $twentyFourHoursAgo);
+    
+    if (empty($recentChecks)) {
+        // No recent data, return empty
+        return [
+            'labels' => [],
+            'minData' => [],
+            'maxData' => [],
+            'avgData' => []
+        ];
+    }
+    
+    // Group by hour
+    $hourlyData = [];
+    foreach ($recentChecks as $check) {
+        $hour = date('Y-m-d H:00', $check['timestamp']);
+        if (!isset($hourlyData[$hour])) {
+            $hourlyData[$hour] = [];
         }
+        if ($check['response_time'] > 0) {
+            $hourlyData[$hour][] = $check['response_time'];
+        }
+    }
+    
+    // Sort hours
+    ksort($hourlyData);
+    
+    // Calculate min/max/avg per hour
+    foreach ($hourlyData as $hour => $times) {
+        if (empty($times)) continue;
+        
+        $labels[] = date('H:i', strtotime($hour));
+        $minData[] = round(min($times), 2);
+        $maxData[] = round(max($times), 2);
+        $avgData[] = round(array_sum($times) / count($times), 2);
     }
     
     return [
         'labels' => $labels,
-        'responseTime' => $responseTimeData
+        'minData' => $minData,
+        'maxData' => $maxData,
+        'avgData' => $avgData
     ];
 }
 
@@ -865,22 +898,42 @@ HTML;
             const canvas = document.getElementById(chartId + '_canvas');
             const ctx = canvas.getContext('2d');
             
-            // Create response time chart
+            // Create response time chart with min/max range and average line
             new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: data.labels,
                     datasets: [
                         {
-                            label: 'Response Time (ms)',
-                            data: data.responseTime,
-                            borderColor: '#667eea',
-                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            label: 'Min-Max Range',
+                            data: data.maxData,
+                            borderColor: 'rgba(102, 126, 234, 0.3)',
+                            backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                            fill: '+1',
                             tension: 0.4,
-                            fill: true,
-                            pointRadius: 3,
-                            pointHoverRadius: 5,
-                            spanGaps: false
+                            pointRadius: 0,
+                            borderWidth: 1
+                        },
+                        {
+                            label: '',
+                            data: data.minData,
+                            borderColor: 'rgba(102, 126, 234, 0.3)',
+                            backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Average',
+                            data: data.avgData,
+                            borderColor: '#667eea',
+                            backgroundColor: 'transparent',
+                            tension: 0.4,
+                            fill: false,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            borderWidth: 2
                         }
                     ]
                 },
@@ -895,10 +948,30 @@ HTML;
                         legend: {
                             display: true,
                             position: 'top',
+                            labels: {
+                                filter: (item) => item.text !== ''
+                            }
                         },
                         title: {
                             display: true,
-                            text: 'Response Time Trend'
+                            text: 'Response Time - Last 24 Hours (Hourly)'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const datasetLabel = context.dataset.label || '';
+                                    if (datasetLabel === '') return null;
+                                    
+                                    const value = context.parsed.y;
+                                    if (datasetLabel === 'Min-Max Range') {
+                                        const hourIndex = context.dataIndex;
+                                        const min = data.minData[hourIndex];
+                                        const max = data.maxData[hourIndex];
+                                        return 'Range: ' + min + 'ms - ' + max + 'ms';
+                                    }
+                                    return datasetLabel + ': ' + value + 'ms';
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -909,6 +982,12 @@ HTML;
                             title: {
                                 display: true,
                                 text: 'Response Time (ms)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Hour'
                             }
                         }
                     }
