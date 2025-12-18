@@ -36,7 +36,8 @@ name = "API Endpoint"
 url = "https://api.example.com/health"
 expected_status = 200
 expected_max_response_time = 1000
-notification_email = "devops@example.com"
+# Multiple notification emails (array format)
+notification_email = ["devops@example.com", "oncall@example.com", "alerts@example.com"]
 check_content_contains = "\"status\":\"ok\""  # Optional: verify response content
 # basic_auth_user = "api_user"  # Optional: HTTP Basic Auth username
 # basic_auth_pass = "secret123"  # Optional: HTTP Basic Auth password
@@ -46,5 +47,5 @@ name = "Standby Cluster"
 url = "https://standby.example.com"
 expected_status = 200
 expected_max_response_time = 3000
-notification_email = "admin@example.com"
+notification_email = "admin@example.com"  # Single email (string format also supported)
 override_ip = "10.0.0.50"  # Direct IP check

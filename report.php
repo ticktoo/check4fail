@@ -283,12 +283,19 @@ function generateEmailReport(string $siteName, int $days, array $siteConfig): vo
     
     // Send email
     $notifier = new EmailNotifier();
-    $to = $siteConfig['notification_email'];
+    $recipients = getRecipients($siteConfig['notification_email']);
     
-    if (sendMultipartEmail($to, $subject, $textBody, $htmlBody)) {
-        echo "✅ Report sent to {$to}\n";
-    } else {
-        echo "❌ Failed to send report to {$to}\n";
+    $allSuccess = true;
+    foreach ($recipients as $to) {
+        if (sendMultipartEmail($to, $subject, $textBody, $htmlBody)) {
+            echo "✅ Report sent to {$to}\n";
+        } else {
+            echo "❌ Failed to send report to {$to}\n";
+            $allSuccess = false;
+        }
+    }
+    
+    if (!$allSuccess) {
         exit(1);
     }
 }
@@ -504,6 +511,23 @@ function sendMultipartEmail(string $to, string $subject, string $textBody, strin
     $message .= "--{$boundary}--";
     
     return mail($to, $subject, $message, implode("\r\n", $headers));
+}
+
+/**
+ * Get recipients as an array (supports both string and array input)
+ */
+function getRecipients($notificationEmail): array {
+    if (is_array($notificationEmail)) {
+        return array_values(array_filter($notificationEmail, function($email) {
+            return is_string($email) && !empty(trim($email));
+        }));
+    }
+    
+    if (is_string($notificationEmail) && !empty(trim($notificationEmail))) {
+        return [trim($notificationEmail)];
+    }
+    
+    return [];
 }
 
 /**

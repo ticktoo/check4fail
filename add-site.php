@@ -28,7 +28,8 @@ function showUsage(): void {
     echo "  php add-site.php <url> [notification_email] [options]\n\n";
     echo "Arguments:\n";
     echo "  url                    Full URL to monitor (required)\n";
-    echo "  notification_email     Email for alerts (optional, uses default)\n\n";
+    echo "  notification_email     Email for alerts (optional, uses default)\n";
+    echo "                         For multiple emails, edit config.toml manually\n\n";
     echo "Options:\n";
     echo "  --expected-status=N    Expected HTTP status code (default: 200)\n";
     echo "  --max-time=N           Max response time in ms (default: 3000)\n";
@@ -40,6 +41,8 @@ function showUsage(): void {
     echo "  php add-site.php https://slow-site.com --max-time=10000\n\n";
     echo "Bulk add from file:\n";
     echo "  cat urls.txt | while read url; do php add-site.php \"\$url\"; done\n\n";
+    echo "Note: To add multiple notification emails, manually edit config.toml:\n";
+    echo "  notification_email = [\"admin@example.com\", \"oncall@example.com\"]\n\n";
 }
 
 /**

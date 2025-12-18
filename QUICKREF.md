@@ -100,11 +100,18 @@ name = "My Website"
 url = "https://example.com"
 expected_status = 200
 expected_max_response_time = 2000  # milliseconds
-notification_email = "admin@example.com"
+notification_email = "admin@example.com"  # Single email (string)
 override_ip = "192.168.1.100"  # Optional: bypass DNS
 check_content_contains = "success"  # Optional: content validation
 basic_auth_user = "username"  # Optional: HTTP Basic Auth
 basic_auth_pass = "password"  # Optional: HTTP Basic Auth
+
+[[sites]]
+name = "Critical System"
+url = "https://critical.example.com"
+expected_status = 200
+# Multiple notification emails (array)
+notification_email = ["admin@example.com", "oncall@example.com", "devops@example.com"]
 ```
 
 ## 🔍 Troubleshooting

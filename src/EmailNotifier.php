@@ -13,10 +13,29 @@ class EmailNotifier {
     }
     
     /**
+     * Get recipients as an array (supports both string and array input)
+     * @param string|array $notificationEmail Email address(es)
+     * @return array Array of email addresses
+     */
+    private function getRecipients($notificationEmail): array {
+        if (is_array($notificationEmail)) {
+            return array_values(array_filter($notificationEmail, function($email) {
+                return is_string($email) && !empty(trim($email));
+            }));
+        }
+        
+        if (is_string($notificationEmail) && !empty(trim($notificationEmail))) {
+            return [trim($notificationEmail)];
+        }
+        
+        return [];
+    }
+    
+    /**
      * Send anomaly notification email
      */
     public function sendAnomalyNotification(array $analysis, array $siteConfig): bool {
-        $to = $siteConfig['notification_email'];
+        $recipients = $this->getRecipients($siteConfig['notification_email']);
         $siteName = $siteConfig['name'] ?? $siteConfig['url'];
         
         // Determine severity for subject line
@@ -34,7 +53,15 @@ class EmailNotifier {
         $textBody = $this->createTextBody($analysis, $siteConfig);
         $htmlBody = $this->createHtmlBody($analysis, $siteConfig);
         
-        return $this->sendMultipartEmail($to, $subject, $textBody, $htmlBody);
+        // Send to all recipients
+        $allSuccess = true;
+        foreach ($recipients as $to) {
+            if (!$this->sendMultipartEmail($to, $subject, $textBody, $htmlBody)) {
+                $allSuccess = false;
+            }
+        }
+        
+        return $allSuccess;
     }
     
     /**

@@ -82,7 +82,8 @@ name = "API Endpoint"
 url = "https://api.example.com/health"
 expected_status = 200
 expected_max_response_time = 1000
-notification_email = "devops@example.com"
+# Multiple notification emails (array format)
+notification_email = ["devops@example.com", "oncall@example.com"]
 check_content_contains = "\"status\":\"ok\""
 basic_auth_user = "api_monitor"
 basic_auth_pass = "secret123"
@@ -251,7 +252,7 @@ check4fail-lite/
 | `url` | Yes | Full URL to check |
 | `expected_status` | No | Expected HTTP status (default: 200) |
 | `expected_max_response_time` | No | Max allowed response time (ms) |
-| `notification_email` | Yes | Email address for alerts |
+| `notification_email` | Yes | Email address (string) or multiple addresses (array) for alerts |
 | `override_ip` | No | Bypass DNS, use specific IP |
 | `check_content_contains` | No | Verify response contains text |
 | `basic_auth_user` | No | HTTP Basic Auth username |
