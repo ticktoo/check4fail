@@ -20,6 +20,13 @@ server {
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-XSS-Protection "1; mode=block" always;
     
+    # Prevent caching of HTML status pages (fixes Chrome auto-refresh issues)
+    location ~* \.html$ {
+        add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+        add_header Pragma "no-cache" always;
+        add_header Expires "0" always;
+    }
+    
     # Cache static assets
     location ~* \.(css|js|jpg|jpeg|png|gif|ico|svg)$ {
         expires 1h;

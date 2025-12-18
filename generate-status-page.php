@@ -1058,6 +1058,12 @@ HTML;
                 }]
             });
         }
+        
+        // Auto-refresh with JavaScript (more reliable than meta refresh in Chrome)
+        // Uses both meta refresh and JavaScript for maximum browser compatibility
+        setTimeout(function() {
+            window.location.reload();
+        }, {$refresh} * 1000);
     </script>
 </body>
 </html>

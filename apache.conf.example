@@ -23,6 +23,13 @@
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-XSS-Protection "1; mode=block"
     
+    # Prevent caching of HTML status pages (fixes Chrome auto-refresh issues)
+    <FilesMatch "\.html$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+    
     # Cache static assets
     <FilesMatch "\.(css|js|jpg|jpeg|png|gif|ico|svg)$">
         Header set Cache-Control "public, max-age=3600"
